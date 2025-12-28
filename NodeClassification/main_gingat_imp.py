@@ -21,6 +21,8 @@ import warnings
 warnings.filterwarnings('ignore')
 import copy
 
+import json
+
 def run_fix_mask(args, imp_num, rewind_weight_mask):
 
     pruning.setup_seed(args['seed'])
