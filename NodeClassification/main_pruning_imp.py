@@ -163,19 +163,54 @@ if __name__ == "__main__":
     seed_dict = {'cora': 2377, 'citeseer': 4428, 'pubmed': 3333} 
     seed = seed_dict[args['dataset']]
     rewind_weight = None
-    for p in range(20):
+    # for p in range(20):
         
-        final_mask_dict, rewind_weight = run_get_mask(args, seed, p, rewind_weight)
+    #     final_mask_dict, rewind_weight = run_get_mask(args, seed, p, rewind_weight)
 
-        rewind_weight['adj_mask1_train'] = final_mask_dict['adj_mask']
-        rewind_weight['adj_mask2_fixed'] = final_mask_dict['adj_mask']
-        rewind_weight['net_layer.0.weight_mask_train'] = final_mask_dict['weight1_mask']
-        rewind_weight['net_layer.0.weight_mask_fixed'] = final_mask_dict['weight1_mask']
-        rewind_weight['net_layer.1.weight_mask_train'] = final_mask_dict['weight2_mask']
-        rewind_weight['net_layer.1.weight_mask_fixed'] = final_mask_dict['weight2_mask']
+    #     rewind_weight['adj_mask1_train'] = final_mask_dict['adj_mask']
+    #     rewind_weight['adj_mask2_fixed'] = final_mask_dict['adj_mask']
+    #     rewind_weight['net_layer.0.weight_mask_train'] = final_mask_dict['weight1_mask']
+    #     rewind_weight['net_layer.0.weight_mask_fixed'] = final_mask_dict['weight1_mask']
+    #     rewind_weight['net_layer.1.weight_mask_train'] = final_mask_dict['weight2_mask']
+    #     rewind_weight['net_layer.1.weight_mask_fixed'] = final_mask_dict['weight2_mask']
 
-        best_acc_val, final_acc_test, final_epoch_list, adj_spar, wei_spar = run_fix_mask(args, seed, rewind_weight)
-        print("=" * 120)
-        print("syd : Sparsity:[{}], Best Val:[{:.2f}] at epoch:[{}] | Final Test Acc:[{:.2f}] Adj:[{:.2f}%] Wei:[{:.2f}%]"
-            .format(p + 1, best_acc_val * 100, final_epoch_list, final_acc_test * 100, adj_spar, wei_spar))
+    #     best_acc_val, final_acc_test, final_epoch_list, adj_spar, wei_spar = run_fix_mask(args, seed, rewind_weight)
+    #     print("=" * 120)
+    #     print("syd : Sparsity:[{}], Best Val:[{:.2f}] at epoch:[{}] | Final Test Acc:[{:.2f}] Adj:[{:.2f}%] Wei:[{:.2f}%]"
+    #         .format(p + 1, best_acc_val * 100, final_epoch_list, final_acc_test * 100, adj_spar, wei_spar))
+    #     print("=" * 120)
+        # 添加结果收集  
+    all_results = []  
+      
+    for p in range(20):  
+          
+        final_mask_dict, rewind_weight = run_get_mask(args, seed, p, rewind_weight)  
+  
+        rewind_weight['adj_mask1_train'] = final_mask_dict['adj_mask']  
+        rewind_weight['adj_mask2_fixed'] = final_mask_dict['adj_mask']  
+        rewind_weight['net_layer.0.weight_mask_train'] = final_mask_dict['weight1_mask']  
+        rewind_weight['net_layer.0.weight_mask_fixed'] = final_mask_dict['weight1_mask']  
+        rewind_weight['net_layer.1.weight_mask_train'] = final_mask_dict['weight2_mask']  
+        rewind_weight['net_layer.1.weight_mask_fixed'] = final_mask_dict['weight2_mask']  
+  
+        best_acc_val, final_acc_test, final_epoch_list, adj_spar, wei_spar = run_fix_mask(args, seed, rewind_weight)  
+          
+        # 收集结果数据  
+        result_dict = {  
+            'iteration': p + 1,  
+            'best_val_acc': float(best_acc_val),  
+            'final_test_acc': float(final_acc_test),  
+            'best_epoch': int(final_epoch_list),  
+            'adj_sparsity': float(adj_spar),  
+            'weight_sparsity': float(wei_spar)  
+        }  
+        all_results.append(result_dict)  
+          
+        # 保存到JSON文件  
+        with open('imp_results.json', 'w') as f:  
+            json.dump(all_results, f, indent=2)  
+          
+        print("=" * 120)  
+        print("syd : Sparsity:[{}], Best Val:[{:.2f}] at epoch:[{}] | Final Test Acc:[{:.2f}] Adj:[{:.2f}%] Wei:[{:.2f}%]"  
+            .format(p + 1, best_acc_val * 100, final_epoch_list, final_acc_test * 100, adj_spar, wei_spar))  
         print("=" * 120)
