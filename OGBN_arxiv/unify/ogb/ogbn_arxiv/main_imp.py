@@ -95,6 +95,13 @@ def main_fixed_mask(args, imp_num, rewind_weight_mask, resume_train_ckpt=None):
     results['adj_spar'] = adj_spar
     results['wei_spar'] = wei_spar
 
+    # 保存到文件用于可视化  
+    import json  
+    with open(f'imp_results_{imp_num}.json', 'w') as f:  
+
+    #h
+    
+    json.dump(results, f)
     start_epoch = 1
     if resume_train_ckpt:
         
