@@ -253,9 +253,20 @@ if __name__ == "__main__":
             main_fixed_mask(args, start_imp, rewind_weight_mask, resume_train_ckpt)
             start_imp += 1
 
-    for imp_num in range(start_imp, 21):
+    # for imp_num in range(start_imp, 21):
 
-        rewind_weight_mask = main_get_mask(args, imp_num, rewind_weight_mask, resume_train_ckpt)
-        main_fixed_mask(args, imp_num, rewind_weight_mask)
+    #     rewind_weight_mask = main_get_mask(args, imp_num, rewind_weight_mask, resume_train_ckpt)
+    #     main_fixed_mask(args, imp_num, rewind_weight_mask)
 
+    # 在__main__中添加  
+    all_results = []  
+    for imp_num in range(1, 21):  
+        # 运行实验并收集结果  
+        result = run_imp_experiment(imp_num)  
+        all_results.append(result)  
+      
+    # 保存完整结果  
+    with open('imp_all_results.json', 'w') as f:  
+        json.dump(all_results, f)
+    #h
         
