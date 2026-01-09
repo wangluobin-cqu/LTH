@@ -19,6 +19,13 @@ import math
 # 		# print('th:', th)
 # 		# print('temp:', temp.size())
 # 		return torch.sign(w) * nn.functional.relu(temp)
+
+
+def print_args(args, str_num=80):
+    for arg, val in args.__dict__.items():
+        print(arg + '.' * (str_num - len(arg) - len(str(val))) + str(val))
+    print()
+
 def prune_adj(oriadj, non_zero_idx, percent):
     
     original_prune_num = int((non_zero_idx / 2) * (percent/100))
