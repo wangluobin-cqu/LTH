@@ -454,9 +454,9 @@ def add_node_mask(model):
 def subgradient_update_mask_node(model, args):  
     """更新所有掩码的子梯度"""  
     # 边剪枝掩码更新  
-    model.adj_mask1_train.grad.data.add_(args.s1 * torch.sign(model.adj_mask1_train.data))  
-    model.net_layer[0].weight_mask_train.grad.data.add_(args.s2 * torch.sign(model.net_layer[0].weight_mask_train.data))  
-    model.net_layer[1].weight_mask_train.grad.data.add_(args.s2 * torch.sign(model.net_layer[1].weight_mask_train.data))  
+    # model.adj_mask1_train.grad.data.add_(args.s1 * torch.sign(model.adj_mask1_train.data))  
+    # model.net_layer[0].weight_mask_train.grad.data.add_(args.s2 * torch.sign(model.net_layer[0].weight_mask_train.data))  
+    # model.net_layer[1].weight_mask_train.grad.data.add_(args.s2 * torch.sign(model.net_layer[1].weight_mask_train.data))  
       
     # 节点剪枝掩码更新  
     if hasattr(model, 'node_mask_train') and model.node_mask_train.grad is not None:  
