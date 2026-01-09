@@ -437,6 +437,76 @@ def soft_mask_init(model, init_type, seed):
     else:
         assert False
 
-    
+
+def add_node_mask(model):  
+    """添加节点特征掩码"""  
+    embedding_dim = model.embedding_dim[0]  
+    model.node_mask_train = nn.Parameter(torch.ones(embedding_dim))  
+    model.node_mask_fixed = nn.Parameter(torch.ones(embedding_dim), requires_grad=False)  
+  
+def subgradient_update_mask_node(model, args):  
+    """更新所有掩码的子梯度"""  
+    # 边剪枝掩码更新  
+    model.adj_mask1_train.grad.data.add_(args.s1 * torch.sign(model.adj_mask1_train.data))  
+    model.net_layer[0].weight_mask_train.grad.data.add_(args.s2 * torch.sign(model.net_layer[0].weight_mask_train.data))  
+    model.net_layer[1].weight_mask_train.grad.data.add_(args.s2 * torch.sign(model.net_layer[1].weight_mask_train.data))  
+      
+    # 节点剪枝掩码更新  
+    if hasattr(model, 'node_mask_train') and model.node_mask_train.grad is not None:  
+        model.node_mask_train.grad.data.add_(args.s3 * torch.sign(model.node_mask_train.data))  
+  
+def get_final_mask_epoch_node(model, rewind_weight, args):  
+    """获取所有掩码的最终剪枝结果"""  
+    # 边剪枝部分  
+    adj_percent = args.pruning_percent_adj  
+    wei_percent = args.pruning_percent_wei  
+    adj_mask, wei_mask = get_mask_distribution(model, if_numpy=False)  
+      
+    adj_total = adj_mask.shape[0]  
+    wei_total = wei_mask.shape[0]  
+      
+    adj_y, adj_i = torch.sort(adj_mask.abs())  
+    wei_y, wei_i = torch.sort(wei_mask.abs())  
+      
+    adj_thre_index = int(adj_total * adj_percent)  
+    adj_thre = adj_y[adj_thre_index]  
+      
+    wei_thre_index = int(wei_total * wei_percent)  
+    wei_thre = wei_y[wei_thre_index]  
+      
+    # 节点剪枝部分  
+    node_percent = args.pruning_percent_node  
+    node_mask = model.node_mask_train.detach()  
+    node_total = node_mask.shape[0]  
+      
+    node_y, node_i = torch.sort(node_mask.abs())  
+    node_thre_index = int(node_total * node_percent)  
+    node_thre = node_y[node_thre_index]  
+      
+    # 应用剪枝  
+    ori_adj_mask = model.adj_mask1_train.detach().cpu()  
+    rewind_weight['adj_mask1_train'] = get_each_mask(ori_adj_mask, adj_thre)  
+    rewind_weight['adj_mask1_fixed'] = rewind_weight['adj_mask1_train']  
+      
+    rewind_weight['net_layer.0.weight_mask_train'] = get_each_mask(model.net_layer[0].state_dict()['weight_mask_train'], wei_thre)  
+    rewind_weight['net_layer.0.weight_mask_fixed'] = rewind_weight['net_layer.0.weight_mask_train']  
+    rewind_weight['net_layer.1.weight_mask_train'] = get_each_mask(model.net_layer[1].state_dict()['weight_mask_train'], wei_thre)  
+    rewind_weight['net_layer.1.weight_mask_fixed'] = rewind_weight['net_layer.1.weight_mask_train']  
+      
+    rewind_weight['node_mask_fixed'] = new_hard_mask  
+      
+    # 计算稀疏度  
+    adj_spar = rewind_weight['adj_mask1_fixed'].sum() * 100 / model.adj_nonzero  
+    wei_nonzero = rewind_weight['net_layer.0.weight_mask_fixed'].sum() + rewind_weight['net_layer.1.weight_mask_fixed'].sum()  
+    wei_all = rewind_weight['net_layer.0.weight_mask_fixed'].numel() + rewind_weight['net_layer.1.weight_mask_fixed'].numel()  
+    wei_spar = wei_nonzero * 100 / wei_all  
+    node_spar = rewind_weight['node_mask_fixed'].sum() * 100 / rewind_weight['node_mask_fixed'].numel()  
+      
+    return rewind_weight, adj_spar, wei_spar, node_spar  
+  
+def print_node_sparsity(model):  
+    """打印节点掩码稀疏度"""  
+    node_spar = model.node_mask_fixed.sum() * 100 / model.node_mask_fixed.numel()  
+    return node_spar
 
 
