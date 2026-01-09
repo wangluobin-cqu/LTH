@@ -9,10 +9,16 @@ class net_gcn(nn.Module):
     def __init__(self, embedding_dim, adj):
         super().__init__()
 
+        self.embedding_dim = embedding_dim  # 必须保存
+        
         self.layer_num = len(embedding_dim) - 1
         self.net_layer = nn.ModuleList([nn.Linear(embedding_dim[ln], embedding_dim[ln+1], bias=False) for ln in range(self.layer_num)])
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(p=0.5)
+         # ===== node feature-level pruning =====
+        self.node_mask_train = nn.Parameter(torch.ones(embedding_dim[0]))
+        self.node_mask_fixed = nn.Parameter(torch.ones(embedding_dim[0]), requires_grad=False)
+        
         self.adj_nonzero = torch.nonzero(adj, as_tuple=False).shape[0]
         self.adj_mask1_train = nn.Parameter(self.generate_adj_mask(adj))
         self.adj_mask2_fixed = nn.Parameter(self.generate_adj_mask(adj), requires_grad=False)
@@ -23,9 +29,14 @@ class net_gcn(nn.Module):
          # ====== Node pruning：只影响特征，不破坏图结构 ======
         if hasattr(self, 'node_mask_train') and hasattr(self, 'node_mask_fixed'):
             x = x * self.node_mask_train * self.node_mask_fixed
+            
+        # edge pruning（如果你做 pure node pruning，这两个 mask 直接设为 1）
+        adj = torch.mul(adj, 1)
+        adj = torch.mul(adj, 1)
+
         
-        adj = torch.mul(adj, self.adj_mask1_train)
-        adj = torch.mul(adj, self.adj_mask2_fixed)
+        # adj = torch.mul(adj, self.adj_mask1_train)
+        # adj = torch.mul(adj, self.adj_mask2_fixed)
         adj = self.normalize(adj)
         #adj = torch.mul(adj, self.adj_mask2_fixed)
         for ln in range(self.layer_num):
