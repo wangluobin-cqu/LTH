@@ -39,7 +39,7 @@ def run_get_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):
     # 3️重新初始化 trainable mask
     model.node_mask_train.data.fill_(1.0) 
       
-    pruning.add_trainable_mask_noise(model)  
+    pruning.add_trainable_mask_noise(model, c=1e-4) 
     adj_spar, wei_spar = pruning.print_sparsity(model)  
       
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)  
