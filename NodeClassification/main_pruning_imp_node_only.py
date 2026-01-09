@@ -7,6 +7,8 @@ import utils
 import argparse  
 import copy  
 import warnings  
+from sklearn.metrics import f1_score
+
 warnings.filterwarnings('ignore')  
   
 def run_get_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):  
@@ -62,8 +64,8 @@ def run_get_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):
         with torch.no_grad():  
             model.eval()  
             output = model(features, adj)  
-            acc_val = utils.accuracy(output[idx_val], labels[idx_val])  
-            acc_test = utils.accuracy(output[idx_test], labels[idx_test])  
+            acc_val = f1_score(labels[idx_val].cpu().numpy(), output[idx_val].cpu().numpy().argmax(axis=1), average='micro')  
+            acc_test = f1_score(labels[idx_test].cpu().numpy(), output[idx_test].cpu().numpy().argmax(axis=1), average='micro') 
               
             if acc_val > best_val_acc['val_acc']:  
                 best_val_acc['test_acc'] = acc_test  
