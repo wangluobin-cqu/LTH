@@ -469,17 +469,26 @@ def get_final_mask_epoch_node_only(model, rewind_weight, args):
     node_y, node_i = torch.sort(node_mask.abs())  
     node_thre_index = int(node_total * node_percent)  
     node_thre = node_y[node_thre_index]  
-      
-    # 应用剪枝  
+
+    # Fixed mask 累积剪枝
+    new_hard_mask = get_each_mask(node_mask.cpu(), node_thre)
+    
+    # Train mask 每轮重置
+    rewind_weight['node_mask_train'] = torch.ones_like(new_hard_mask)
+    rewind_weight['node_mask_fixed'] = new_hard_mask.clone()
+    
+    node_spar = 100.0 * new_hard_mask.sum().item() / new_hard_mask.numel()
+    return rewind_weight, node_spar
+    # # 应用剪枝  
  
-    rewind_weight['node_mask_train'] = torch.ones_like(rewind_weight['node_mask_train'])
-    rewind_weight['node_mask_fixed'] = get_each_mask(model.node_mask_train.detach().cpu(), node_thre)
+    # rewind_weight['node_mask_train'] = torch.ones_like(rewind_weight['node_mask_train'])
+    # rewind_weight['node_mask_fixed'] = get_each_mask(model.node_mask_train.detach().cpu(), node_thre)
 
       
-    # 计算稀疏度  
-    node_spar = rewind_weight['node_mask_fixed'].sum() * 100 / rewind_weight['node_mask_fixed'].numel()  
+    # # 计算稀疏度  
+    # node_spar = rewind_weight['node_mask_fixed'].sum() * 100 / rewind_weight['node_mask_fixed'].numel()  
       
-    return rewind_weight, node_spar  
+    # return rewind_weight, node_spar  
   
 def print_node_sparsity(model):  
     """打印节点掩码稀疏度"""  
