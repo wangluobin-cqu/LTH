@@ -19,6 +19,10 @@ class net_gcn(nn.Module):
         self.normalize = utils.torch_normalize_adj
     
     def forward(self, x, adj, val_test=False):
+
+         # ====== Node pruning：只影响特征，不破坏图结构 ======
+        if hasattr(self, 'node_mask_train') and hasattr(self, 'node_mask_fixed'):
+            x = x * self.node_mask_train * self.node_mask_fixed
         
         adj = torch.mul(adj, self.adj_mask1_train)
         adj = torch.mul(adj, self.adj_mask2_fixed)
