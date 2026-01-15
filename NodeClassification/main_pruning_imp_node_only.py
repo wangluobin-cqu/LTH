@@ -93,7 +93,9 @@ def run_fix_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):
     model = net_gcn(args.embedding_dim, adj)  
     pruning.add_mask(model)  
     pruning.add_node_mask(model)  
-    model.load_state_dict(rewind_weight_mask)  
+    # model.load_state_dict(rewind_weight_mask)  chat老师建议修改
+    model.load_state_dict(rewind_weight, strict=False)
+
       
     adj_spar, wei_spar = pruning.print_sparsity(model)  
     node_spar = pruning.print_node_sparsity(model)  
