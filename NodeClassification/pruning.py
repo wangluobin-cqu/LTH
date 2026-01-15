@@ -468,7 +468,7 @@ def get_final_mask_epoch_node_only(model, rewind_weight, args):
       
     node_y, node_i = torch.sort(node_mask.abs())  
     node_thre_index = int(node_total * node_percent)  
-    node_thre = node_y[node_thre_index]  
+    node_thre = node_y[node_thre_index].cpu()
 
     # Fixed mask 累积剪枝
     new_hard_mask = get_each_mask(node_mask.cpu(), node_thre)
