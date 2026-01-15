@@ -58,7 +58,7 @@ def run_get_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):
         loss_train.backward()  
           
         # 更新所有掩码的梯度  
-        pruning.subgradient_update_mask_node(model, args)  
+        pruning.subgradient_update_mask_node_only(model, args)  
         optimizer.step()  
           
         with torch.no_grad():  
