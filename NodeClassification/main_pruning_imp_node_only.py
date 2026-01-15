@@ -71,7 +71,7 @@ def run_get_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):
                 best_val_acc['test_acc'] = acc_test  
                 best_val_acc['val_acc'] = acc_val  
                 best_val_acc['epoch'] = epoch  
-                rewind_weight, adj_spar, wei_spar, node_spar = pruning.get_final_mask_epoch_node(model, rewind_weight, args)  
+                rewind_weight, adj_spar, wei_spar, node_spar = pruning.get_final_mask_epoch_node_only(model, rewind_weight, args)  
           
         print("IMP[{}] (GCN {} Get Mask) Epoch:[{}/{}], Loss:[{:.4f}] Val:[{:.2f}] Test:[{:.2f}] | Best Val:[{:.2f}] Test:[{:.2f}] at Epoch:[{}] | Adj:[{:.2f}%] Wei:[{:.2f}%] Node:[{:.2f}%]"  
              .format(imp_num, args.dataset, epoch, args.total_epoch, loss_train.item(),  
