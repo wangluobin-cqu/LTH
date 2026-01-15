@@ -119,22 +119,18 @@ def run_fix_mask_node(args, imp_num, rewind_weight_mask, dataset_dict):
         with torch.no_grad():  
             model.eval()  
             output = model(features, adj)  
-            acc_val = utils.accuracy(output[idx_val], labels[idx_val])  
-            acc_test = utils.accuracy(output[idx_test], labels[idx_test])  
+   
+            acc_val = f1_score(labels[idx_val].cpu().numpy(), output[idx_val].cpu().numpy().argmax(axis=1), average='micro')  
+            acc_test = f1_score(labels[idx_test].cpu().numpy(), output[idx_test].cpu().numpy().argmax(axis=1), average='micro')
               
             if acc_val > best_val_acc['val_acc']:  
                 best_val_acc['test_acc'] = acc_test  
                 best_val_acc['val_acc'] = acc_val  
                 best_val_acc['epoch'] = epoch  
           
-        print("IMP[{}] (GCN {} Fix Mask) Epoch:[{}/{}], Loss:[{:.4f}] Val:[{:.2f}] Test:[{:.2f}] | Best Val:[{:.2f}] Test:[{:.2f}] at Epoch:[{}] | Adj:[{:.2f}%] Wei:[{:.2f}%] Node:[{:.2f}%]"  
-             .format(imp_num, args.dataset, epoch, args.total_epoch, loss_train.item(),  
-                    acc_val * 100, acc_test * 100, best_val_acc['val_acc'] * 100,  
-                    best_val_acc['test_acc'] * 100, best_val_acc['epoch'], adj_spar, wei_spar, node_spar))  
+        print("IMP[{}] Epoch:[{}/{}] | Node:[{:.2f}%]".format(imp_num, epoch, args.total_epoch, node_spar)) 
       
-    print("Final: IMP[{}] (GCN {}) | Best Val:[{:.2f}] Test:[{:.2f}] at Epoch:[{}] | Adj:[{:.2f}%] Wei:[{:.2f}%] Node:[{:.2f}%]"  
-         .format(imp_num, args.dataset, best_val_acc['val_acc'] * 100,  
-                best_val_acc['test_acc'] * 100, best_val_acc['epoch'], adj_spar, wei_spar, node_spar))  
+    print("IMP[{}] Epoch:[{}/{}] | Node:[{:.2f}%]".format(imp_num, epoch, args.total_epoch, node_spar)) 
   
 def parser_loader():  
     parser = argparse.ArgumentParser(description='Options')  
